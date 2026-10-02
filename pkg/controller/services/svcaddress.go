@@ -33,9 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	"github.com/jcmoraisjr/haproxy-ingress/pkg/controller/config"
-	convtypes "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/types"
-	"github.com/jcmoraisjr/haproxy-ingress/pkg/utils"
+	"github.com/n42-gateway/n42-gateway/pkg/controller/config"
+	convtypes "github.com/n42-gateway/n42-gateway/pkg/converters/types"
+	"github.com/n42-gateway/n42-gateway/pkg/utils"
 )
 
 func initSvcAddress(ctx context.Context, config *config.Config, client client.Client, cache *c) *svcAddress {
@@ -138,6 +138,9 @@ func (s *svcAddress) updateIngressStatus(namespace, name string, lb []networking
 	ing.Namespace = namespace
 	ing.Name = name
 	return s.updateStatus(ing, func() bool {
+		if class := ing.Spec.IngressClassName; class != nil && *class == s.cfg.ConfigurationClass {
+			return false
+		}
 		if reflect.DeepEqual(ing.Status.LoadBalancer.Ingress, lb) {
 			return false
 		}
@@ -151,6 +154,9 @@ func (s *svcAddress) updateGatewayStatus(namespace, name string, lb []gatewayv1.
 	gw.Namespace = namespace
 	gw.Name = name
 	return s.updateStatus(gw, func() bool {
+		if gw.Spec.GatewayClassName == gatewayv1.ObjectName(s.cfg.ConfigurationClass) {
+			return false
+		}
 		if reflect.DeepEqual(gw.Status.Addresses, lb) {
 			return false
 		}
@@ -216,6 +222,8 @@ func (s *svcAddress) shutdown() {
 	if err := s.updateAllResources(nil); err != nil {
 		s.log.Error(err, "error updating resources")
 	}
+	// Mirror the wipe so a later leadership re-acquisition repopulates status via checkChanged.
+	s.curr = nil
 }
 
 func (s *svcAddress) readCurrentLB(ctx context.Context) (lb []networking.IngressLoadBalancerIngress, err error) {

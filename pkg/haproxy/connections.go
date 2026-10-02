@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jcmoraisjr/haproxy-ingress/pkg/haproxy/socket"
+	"github.com/n42-gateway/n42-gateway/pkg/haproxy/socket"
 )
 
 func newConnections(ctx context.Context, masterSock, adminSock string, timeout time.Duration) *connections {
@@ -116,7 +116,9 @@ func shutdownSessionsSync(sock socket.HAProxySocket, duration time.Duration) {
 	var sessionList []string
 	for _, s := range strings.Split(sess[0], "\n") {
 		i := strings.Index(s, ":")
-		if i > 0 {
+		// skip our own connection to the admin socket; otherwise the loop
+		// below shuts it down and cannot reach the remaining sessions
+		if i > 0 && !strings.Contains(s, "fe=GLOBAL") {
 			sessionList = append(sessionList, s[:i])
 		}
 	}

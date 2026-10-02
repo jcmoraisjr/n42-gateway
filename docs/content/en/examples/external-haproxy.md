@@ -1,26 +1,28 @@
 ---
 title: "External haproxy"
 linkTitle: "External haproxy"
-weight: 20
+aliases: 
+- /docs/examples/external-haproxy
+type: docs
 description: >
-  Demonstrate how to configure HAProxy Ingress to use an external haproxy deployment.
+  Demonstrate how to configure N42 Gateway to use an external haproxy deployment.
 ---
 
-This example demonstrates how to configure HAProxy Ingress to manage an external
+This example demonstrates how to configure N42 Gateway to manage an external
 haproxy instance deployed as a sidecar container. This approach decouple the
 controller and the running haproxy version, allowing the sysadmin to update any
 of them independently of the other.
 
 ## Prerequisites
 
-This document requires only a Kubernetes cluster. HAProxy Ingress doesn't need to be
+This document requires only a Kubernetes cluster. N42 Gateway doesn't need to be
 installed, and if so, the installation process should use the
 [Helm chart]({{% relref "/docs/getting-started#installation" %}}).
 
 ## Configure the controller
 
 The easiest and recommended way to configure an external haproxy is using the Helm
-chart with a customized values file. Create the `haproxy-ingress-values.yaml` file with the
+chart with a customized values file. Create the `n42-gateway-values.yaml` file with the
 following content:
 
 ```yaml
@@ -46,7 +48,7 @@ drops its own privileges just before starting its event loop. See
 [Security Considerations](https://docs.haproxy.org/3.0/management.html#13) from the documentation.
 
 Since 2.4, haproxy container has been started as UID `99`. There are a few ways to give it
-permissions to bind privileged port, none of them is provided by default by HAProxy Ingress Helm
+permissions to bind privileged port, none of them is provided by default by N42 Gateway Helm
 chart because all of them has some sort of limitation. Choose one of the options below that best
 suits the needs of your environment:
 
@@ -119,42 +121,42 @@ to `:80` and `:443` without the need to run as root. Give it a try by removing t
 
 ## Install the controller
 
-Add the HAProxy Ingress Helm repository if using HAProxy Ingress' chart for the first time:
+Add the N42 Gateway Helm repository if using N42 Gateway' chart for the first time:
 
 ```
-$ helm repo add haproxy-ingress https://haproxy-ingress.github.io/charts
+$ helm repo add n42 https://n42-gateway.github.io/charts
 ```
 
-Install or upgrade HAProxy Ingress using the `haproxy-ingress-values.yaml` parameters:
+Install or upgrade N42 Gateway using the `n42-gateway-values.yaml` parameters:
 
 ```
-$ helm upgrade haproxy-ingress haproxy-ingress/haproxy-ingress\
-  --install --create-namespace --namespace=ingress-controller\
-  -f haproxy-ingress-values.yaml
+$ helm upgrade n42 n42/n42-gateway\
+  --install --create-namespace --namespace=n42-gateway-system\
+  -f n42-gateway-values.yaml
 ```
 
 Check if the controller successfully starts or restarts:
 
 ```
-$ kubectl --namespace ingress-controller get pod -w
+$ kubectl --namespace n42-gateway-system get pod -w
 ```
 
 ## Test
 
-Open two distinct terminals to follow `haproxy-ingress` and `haproxy` logs:
+Open two distinct terminals to follow `n42-gateway` and `haproxy` logs:
 
 ```
-$ kubectl --namespace ingress-controller get pod
-NAME                               READY   STATUS    RESTARTS   AGE
-haproxy-ingress-6f8848d6fb-gxmrk   2/2     Running   0          13s
+$ kubectl --namespace n42-gateway-system get pod
+NAME                           READY   STATUS    RESTARTS   AGE
+n42-gateway-6f8848d6fb-gxmrk   2/2     Running   0          13s
 
-$ kubectl --namespace ingress-controller logs -f haproxy-ingress-6f8848d6fb-gxmrk -c haproxy-ingress
+$ kubectl --namespace n42-gateway-system logs -f n42-gateway-6f8848d6fb-gxmrk -c n42-gateway
 ```
 
 and
 
 ```
-$ kubectl --namespace ingress-controller logs -f haproxy-ingress-6f8848d6fb-gxmrk -c haproxy
+$ kubectl --namespace n42-gateway-system logs -f n42-gateway-6f8848d6fb-gxmrk -c haproxy
 ```
 
 Do some `curl` to any exposed application, or just use the controller or service loadbalancer
@@ -164,9 +166,9 @@ IP like the example below:
 $ curl 192.168.1.11
 ```
 
-HAProxy Ingress and the external haproxy should be logging their own events:
+N42 Gateway and the external haproxy should be logging their own events:
 
-`haproxy-ingress` container:
+`n42-gateway` container:
 
 ```
 ...
@@ -202,30 +204,30 @@ This example configures 2 (two) new containers in the controllers' pod:
 
 The `haproxy` container references the official Alpine based image `haproxy:2.3.4-alpine`,
 but can be any other. The only requisite is to be 2.0 or newer due to some new keywords
-used by HAProxy Ingress.
+used by N42 Gateway.
 
 The `init` container just copy a minimum and valid `haproxy.cfg`. This file is used
-to properly starts haproxy and configures its master CLI that HAProxy Ingress uses
+to properly starts haproxy and configures its master CLI that N42 Gateway uses
 to manage the instance.
 
-A new command-line `--master-socket` was also added to the HAProxy Ingress container.
+A new command-line `--master-socket` was also added to the N42 Gateway container.
 This option enables an external haproxy instance, pointing to the unix socket path
 of its master CLI.
 
 ### Shared filesystem
 
-HAProxy Ingress sends configuration files to the haproxy instance using a shared
+N42 Gateway sends configuration files to the haproxy instance using a shared
 filesystem. A Kubernetes' [`emptyDir`](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
 works well.
 
 The following directories must be shared:
 
-* `/etc/haproxy`: configuration and map files - `init` and `haproxy-ingress` need write access, `haproxy` need read access.
-* `/var/lib/haproxy`: mostly ssl related files - `haproxy-ingress` need write access, `haproxy` need read access.
-* `/var/run/haproxy`: unix sockets - `haproxy-ingress` and `haproxy` need write access.
+* `/etc/haproxy`: configuration and map files - `init` and `n42-gateway` need write access, `haproxy` need read access.
+* `/var/lib/haproxy`: mostly ssl related files - `n42-gateway` need write access, `haproxy` need read access.
+* `/var/run/haproxy`: unix sockets - `n42-gateway` and `haproxy` need write access.
 
 ### Liveness probe
 
-Default HAProxy Ingress deployment has a liveness probe to an haproxy's health
-check URI. This example changes the liveness probe from the HAProxy Ingress
+Default N42 Gateway deployment has a liveness probe to an haproxy's health
+check URI. This example changes the liveness probe from the N42 Gateway
 container to the haproxy one.

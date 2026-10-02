@@ -1,6 +1,7 @@
 acmeexclusive
 allowcfg
 annprefix
+anrec
 appfail
 arodland
 Artyom
@@ -37,6 +38,7 @@ Catmull
 cax
 cfssl
 chaffee
+chartname
 Chaudhary
 Chitoku
 Chojnowski
@@ -118,6 +120,9 @@ Equifax
 errexit
 errgroup
 errorfile
+Eventf
+eventtype
+evrec
 expapps
 expback
 expcode
@@ -128,7 +133,6 @@ expmatch
 extfile
 extwild
 fcgiapp
-feb
 ffconf
 ffexp
 fhdr
@@ -152,6 +156,7 @@ gks
 glbc
 glog
 goimports
+goldmark
 gomod
 goruntime
 gotemplate
@@ -181,6 +186,7 @@ HATCP
 hatcpserviceports
 hatmpl
 hatypes
+hayden
 hback
 hconfig
 hdef
@@ -245,7 +251,6 @@ IXYK
 jcmoraisjr
 jinzhu
 joaomora
-jul
 Jurriaan
 Karan
 keyder
@@ -265,7 +270,6 @@ leastconn
 legacylogger
 lfactory
 linereader
-Linforth
 listlen
 listname
 llink
@@ -281,6 +285,7 @@ lsplit
 luadir
 luares
 luarocks
+maintainership
 makepasswd
 mapstructure
 mastersock
@@ -298,6 +303,7 @@ mitchellh
 mkpasswd
 mkubaczyk
 Moacir
+modecfg
 modetcp
 modsec
 modsecurity
@@ -353,7 +359,7 @@ pathtype
 pawelb
 pcre
 percentunit
-Pixabay
+Pexels
 pkgtypes
 pns
 portnumber
@@ -439,6 +445,7 @@ sslpassthrough
 sslredir
 sslredirect
 ssvc
+Starostin
 statefulset
 stktable
 Sto
